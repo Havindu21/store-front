@@ -1,0 +1,209 @@
+import React, { useState } from "react";
+import backgroundImage from "../assets/shopping.jpg";
+import { Eye, EyeOff, User, Mail, Lock, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+function Signup() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [focusedField, setFocusedField] = useState("");
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await fetch("https://rk-store-backend-3.onrender.com/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(data.message || "Registration successful!", {
+          position: "top-right",
+          autoClose: 2500,
+          theme: "colored",
+        });
+        setTimeout(() => navigate("/login"), 2500);
+      } else {
+        toast.error(data.error || data.errors?.[0]?.msg || "Registration failed!", {
+          position: "top-right",
+          autoClose: 3000,
+          theme: "colored",
+        });
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      toast.error("Something went wrong. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+        theme: "colored",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div
+      className="min-h-screen w-full flex items-center justify-center relative bg-no-repeat bg-center bg-cover"
+      style={{ backgroundImage: `url(${backgroundImage})` }}
+    >
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+
+      {/* Toast Notifications */}
+      <ToastContainer />
+
+      {/* Main Card */}
+      <div className="relative w-[90%] sm:w-[80%] md:w-[60%] lg:w-[40%] flex flex-col rounded-3xl overflow-hidden border border-white/20 shadow-2xl z-10 
+                      bg-white/10 backdrop-blur-2xl backdrop-saturate-150
+                      hover:backdrop-blur-3xl transition-all duration-500 ease-in-out">
+
+        {/* Signup Form Section */}
+        <div className="w-full flex flex-col justify-center p-4 sm:p-6 md:p-10 relative">
+          <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-500/10 to-indigo-600/10 blur-3xl rounded-3xl"></div>
+
+          <div className="max-w-md mx-auto w-full">
+            {/* Header */}
+            <div className="text-center mb-6 sm:mb-8">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white drop-shadow-lg">
+                Create Account
+              </h1>
+              <p className="text-slate-200 text-sm sm:text-base md:text-lg mt-1 sm:mt-2">
+                Join <span className="text-blue-600 font-semibold">RK Stores</span> and start your journey
+              </p>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+              {[{ name: "name", type: "text", icon: User, placeholder: "Full Name" },
+                { name: "email", type: "email", icon: Mail, placeholder: "Email Address" }].map((field) => {
+                const Icon = field.icon;
+                return (
+                  <div key={field.name} className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
+                      <Icon
+                        className={`h-4 w-4 sm:h-5 sm:w-5 transition-all duration-300 ${
+                          focusedField === field.name
+                            ? "text-blue-400 scale-110"
+                            : "text-slate-400 group-hover:text-slate-300"
+                        }`}
+                      />
+                    </div>
+                    <input
+                      type={field.type}
+                      name={field.name}
+                      value={form[field.name]}
+                      onChange={handleChange}
+                      onFocus={() => setFocusedField(field.name)}
+                      onBlur={() => setFocusedField("")}
+                      required
+                      disabled={loading}
+                      placeholder={field.placeholder}
+                      className={`w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-white/10 text-white placeholder-slate-300 border 
+                                  rounded-2xl transition-all duration-300 
+                                  focus:outline-none focus:ring-2 focus:ring-blue-400 focus:bg-white/20 
+                                  ${
+                                    focusedField === field.name
+                                      ? "border-blue-400"
+                                      : "border-white/20 hover:border-white/30"
+                                  }`}
+                    />
+                  </div>
+                );
+              })}
+
+              {/* Password Field */}
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
+                  <Lock
+                    className={`h-4 w-4 sm:h-5 sm:w-5 transition-all duration-300 ${
+                      focusedField === "password"
+                        ? "text-blue-400 scale-110"
+                        : "text-slate-400 group-hover:text-slate-300"
+                    }`}
+                  />
+                </div>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  onFocus={() => setFocusedField("password")}
+                  onBlur={() => setFocusedField("")}
+                  required
+                  disabled={loading}
+                  placeholder="Password"
+                  className={`w-full pl-10 sm:pl-12 pr-10 py-2.5 sm:py-3 bg-white/10 text-white placeholder-slate-300 border 
+                              rounded-2xl transition-all duration-300 
+                              focus:outline-none focus:ring-2 focus:ring-blue-400 focus:bg-white/20 
+                              ${
+                                focusedField === "password"
+                                  ? "border-blue-400"
+                                  : "border-white/20 hover:border-white/30"
+                              }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center text-slate-400 hover:text-blue-400 transition-colors z-10"
+                >
+                  {showPassword ? <EyeOff className="h-4 sm:h-5 w-4 sm:w-5" /> : <Eye className="h-4 sm:h-5 w-4 sm:w-5" />}
+                </button>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 
+                          text-white font-semibold py-2.5 sm:py-3 rounded-2xl shadow-lg shadow-blue-500/30
+                          transition-all duration-300 transform hover:scale-[1.03] active:scale-[0.98]
+                          disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {loading ? (
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2 sm:mr-3"></div>
+                    Creating Account...
+                  </div>
+                ) : (
+                  <div className="flex items-center">
+                    Create Account
+                    <ArrowRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5 transition-transform group-hover:translate-x-1" />
+                  </div>
+                )}
+              </button>
+            </form>
+
+            {/* Footer */}
+            <div className="mt-5 sm:mt-6 text-center text-slate-200 text-sm sm:text-base">
+              Already have an account?{" "}
+              <button
+                type="button"
+                disabled={loading}
+                className="text-blue-800 hover:text-blue-500 font-semibold hover:underline transition-colors"
+                onClick={() => navigate("/login")}
+              >
+                Sign In
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Signup;
